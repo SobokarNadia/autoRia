@@ -15,16 +15,8 @@ class PermissionsMiddleware {
         const { _id: accountId, role } = req.res.locals.payload;
         const entityId = req.params.userId || req.params.companyId;
 
-        if (roles.includes(role)) {
+        if (roles.includes(role) || accountId === entityId) {
           switch (role) {
-            case EUserRole.SELLER:
-              if (entityId && accountId !== entityId) {
-                throw new ApiError(
-                  "You cannot manipulate data of another users.",
-                  400,
-                );
-              }
-              break;
             case EUserRole.MANAGER:
               const user = await User.findById(entityId);
               if (
@@ -68,16 +60,14 @@ class PermissionsMiddleware {
       try {
         const { _id: accountId, role } = req.res.locals.payload;
         const carAd = req.res.locals.carAd;
+        const user = await User.findById(accountId);
 
-        if (roles.includes(role)) {
+        if (
+          roles.includes(role) ||
+          accountId === carAd._user ||
+          user._company === carAd._company
+        ) {
           switch (role) {
-            case EUserRole.SELLER:
-              if (carAd._user.toString() !== accountId.toString()) {
-                throw new ApiError(
-                  "You cannot manipulate data of another users.",
-                  400,
-                );
-              }
             case EUserRole.MANAGER:
               const owner = await User.findById(carAd._user);
 
@@ -95,11 +85,7 @@ class PermissionsMiddleware {
               break;
             case EUserRole.COMPANY_ADMINISTRATOR:
             case EUserRole.COMPANY_MANAGER:
-              const user = await User.findOne({
-                _id: accountId,
-                _company: carAd._company,
-              });
-              if (!user) {
+              if (user._company.toString() !== carAd._company.toString()) {
                 throw new ApiError(
                   "You cannot manipulate data of another users or companies .",
                   400,

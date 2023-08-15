@@ -16,7 +16,7 @@ class AuthMiddleware {
 
         for (const key in body) {
           if (typeof body[key] === "string" && filter.check(body[key])) {
-            throw new ApiError("Profane is not allowed!", 400);
+            throw new ApiError("Profanity is not allowed!", 400);
           }
         }
 

@@ -28,11 +28,11 @@ router.post(
 
 router.post(
   "/createManager/:companyId",
+  authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
   commonMiddleware.isIdValid("companyId"),
   authMiddleware.isBodyValid(UserValidator.register),
   commonMiddleware.isCompanyExist,
   authMiddleware.isEmailUnique,
-  authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
   permissionsMiddleware.userPermissions([
     EUserRole.COMPANY_ADMINISTRATOR,
     EUserRole.ADMINISTRATOR,
@@ -42,10 +42,10 @@ router.post(
 
 router.patch(
   "/update/:companyId",
+  authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
   commonMiddleware.isIdValid("companyId"),
   authMiddleware.isBodyValid(CompanyValidator.update),
   commonMiddleware.isCompanyExist,
-  authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
   permissionsMiddleware.userPermissions([
     EUserRole.COMPANY_ADMINISTRATOR,
     EUserRole.ADMINISTRATOR,
@@ -56,9 +56,9 @@ router.patch(
 
 router.delete(
   "/delete/:companyId",
+  authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
   commonMiddleware.isIdValid("companyId"),
   commonMiddleware.isCompanyExist,
-  authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
   permissionsMiddleware.userPermissions([
     EUserRole.COMPANY_ADMINISTRATOR,
     EUserRole.ADMINISTRATOR,

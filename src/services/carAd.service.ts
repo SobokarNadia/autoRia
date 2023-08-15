@@ -1,3 +1,4 @@
+import { UploadedFile } from "express-fileupload";
 import { Types } from "mongoose";
 
 import { ECurrency, EUserRole } from "../enums";
@@ -5,6 +6,7 @@ import { ApiError } from "../errors/api.error";
 import { CarAd, Company, User, Views } from "../models";
 import { ICarAd, ICarAdUpdate, IPaginationResponse, IQuery } from "../types";
 import { currencyService } from "./currency.service";
+import { s3Service } from "./s3.service";
 
 class CarAdService {
   public async create(
@@ -110,10 +112,34 @@ class CarAdService {
     }
   }
 
+  public async uploadPhoto(
+    carAdId: string,
+    photos: UploadedFile,
+  ): Promise<void> {
+    const pathToFile = await s3Service.uploadFile(photos, "carAd", carAdId);
+    await CarAd.findByIdAndUpdate(carAdId, { $push: { photos: pathToFile } });
+  }
+
+  public async deletePhoto(
+    carAdId: string,
+    photoId: string,
+    carAd: ICarAd,
+  ): Promise<void> {
+    const photo = carAd.photos.find((val) => val.includes(photoId));
+
+    await Promise.all([
+      s3Service.deleteFile(photo),
+      CarAd.findByIdAndUpdate(carAdId, {
+        $pull: { photos: photo },
+      }),
+    ]);
+  }
+
   public async delete(
     carAdId: string,
     userId: string,
     companyId: string,
+    carAd: ICarAd,
   ): Promise<void> {
     try {
       if (userId) {
@@ -125,6 +151,8 @@ class CarAdService {
           $pull: { _carAds: carAdId },
         });
       }
+
+      carAd.photos.map(async (photo) => await s3Service.deleteFile(photo));
 
       await Promise.all([
         CarAd.findByIdAndDelete(carAdId),

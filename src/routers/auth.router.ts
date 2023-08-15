@@ -23,8 +23,8 @@ router.post(
 
 router.post(
   "/changePassword",
-  authMiddleware.isBodyValid(UserValidator.changePassword),
   authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
+  authMiddleware.isBodyValid(UserValidator.changePassword),
   authController.changePassword,
 );
 

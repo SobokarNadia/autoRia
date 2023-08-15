@@ -84,17 +84,6 @@ class CommonMiddleware {
       next(e);
     }
   }
-
-  // public async filterBody(req: Request, res: Response, next: NextFunction) {
-  //   const data = req.body;
-  //
-  //   for (const key in data) {
-  //     if (typeof data[key] === "string" && filter.check(data[key])) {
-  //       throw new ApiError("Profane is not allowed!", 400);
-  //     }
-  //   }
-  //   next();
-  // }
 }
 
 export const commonMiddleware = new CommonMiddleware();

@@ -17,6 +17,7 @@ export interface ICarAd {
   currencyEUR_UAH?: number;
   priceEUR?: number;
   VIN?: number;
+  photos?: string[];
   _user?: any;
   _company?: any;
 }

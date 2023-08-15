@@ -1,8 +1,9 @@
 import cors from "cors";
 import express, { NextFunction, Request, Response } from "express";
+import fileUpload from "express-fileupload";
 import * as mongoose from "mongoose";
 
-import { configs } from "./configs/config";
+import { configs } from "./configs";
 import { cronRunner } from "./crons";
 import { authRouter, carAdRouter, companyRouter, userRouter } from "./routers";
 
@@ -20,6 +21,7 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(fileUpload());
 
 app.use("/auth", authRouter);
 app.use("/user", userRouter);

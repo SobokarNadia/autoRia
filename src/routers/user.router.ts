@@ -20,12 +20,12 @@ router.get(
 
 router.post(
   "/setPremiumAccount/:userId",
+  authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
   commonMiddleware.isIdValid("userId"),
   commonMiddleware.isUserExist,
-  authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
   permissionsMiddleware.userPermissions([
     EUserRole.ADMINISTRATOR,
-    EUserRole.SELLER,
+    // EUserRole.SELLER,
     EUserRole.MANAGER,
   ]),
   userController.setPremiumAccount,
@@ -33,20 +33,20 @@ router.post(
 
 router.post(
   "/createManager",
+  authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
   authMiddleware.isBodyValid(UserValidator.register),
   authMiddleware.isEmailUnique,
-  authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
   permissionsMiddleware.userPermissions([EUserRole.ADMINISTRATOR]),
   userController.createManager,
 );
 
 router.patch(
   "/update/:userId",
-  authMiddleware.isBodyValid(UserValidator.update),
   authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
+  authMiddleware.isBodyValid(UserValidator.update),
   permissionsMiddleware.userPermissions([
     EUserRole.ADMINISTRATOR,
-    EUserRole.SELLER,
+    // EUserRole.SELLER,
   ]),
   userController.update,
 );
@@ -56,7 +56,7 @@ router.delete(
   authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
   permissionsMiddleware.userPermissions([
     EUserRole.ADMINISTRATOR,
-    EUserRole.SELLER,
+    // EUserRole.SELLER,
     EUserRole.MANAGER,
   ]),
   userController.delete,

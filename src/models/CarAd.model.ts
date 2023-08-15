@@ -73,6 +73,11 @@ const carAdSchema = new Schema(
       required: true,
       length: 17,
     },
+    photos: [
+      {
+        type: String,
+      },
+    ],
     _user: {
       type: Types.ObjectId,
       ref: "user",
