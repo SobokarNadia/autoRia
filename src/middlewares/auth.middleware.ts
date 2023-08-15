@@ -1,16 +1,24 @@
 import { NextFunction, Request, Response } from "express";
 import { ObjectSchema } from "joi";
+import filter from "leo-profanity";
 
 import { EToken } from "../enums";
 import { ApiError } from "../errors/api.error";
-import { Token } from "../models";
+import { CarAd, Company, Token, User } from "../models";
 import { tokenService } from "../services";
 
 class AuthMiddleware {
   public isBodyValid(validator: ObjectSchema) {
     return (req: Request, res: Response, next: NextFunction): void => {
       try {
-        const { error, value } = validator.validate(req.body);
+        const body = req.body;
+        const { error, value } = validator.validate(body);
+
+        for (const key in body) {
+          if (typeof body[key] === "string" && filter.check(body[key])) {
+            throw new ApiError("Profane is not allowed!", 400);
+          }
+        }
 
         if (error) {
           throw new ApiError(error.message, 400);
@@ -50,6 +58,43 @@ class AuthMiddleware {
         next(e);
       }
     };
+  }
+
+  public async isVinUnique(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { VIN } = req.body;
+
+      if (await CarAd.findOne({ VIN })) {
+        throw new ApiError(
+          `CarAd with such ${VIN} vin code is already exist. VIN code should be unique.`,
+          400,
+        );
+      }
+
+      next();
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async isEmailUnique(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email } = req.body;
+
+      if (
+        (await User.findOne({ email })) ||
+        (await Company.findOne({ email }))
+      ) {
+        throw new ApiError(
+          `User with such ${email} email is already exist.`,
+          400,
+        );
+      }
+
+      next();
+    } catch (e) {
+      next(e);
+    }
   }
 }
 

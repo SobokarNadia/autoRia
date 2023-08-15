@@ -1,10 +1,8 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
-import { EUserAccount } from "../enums";
-import { ApiError } from "../errors/api.error";
 import { CarAd, Views } from "../models";
-import { ICarAd, IUser } from "../types";
+import { ICarAd } from "../types";
 
 dayjs.extend(utc);
 
@@ -13,15 +11,7 @@ class StatisticInfoService {
     await Views.create({ _carAdId: carAdId });
   }
 
-  public async getStatisticInfo(carAdId: string, user: IUser, carAd: ICarAd) {
-    const { account } = user;
-    if (account !== EUserAccount.PREMIUM) {
-      throw new ApiError(
-        "As you have basic account, you dont have access to this information.",
-        400,
-      );
-    }
-
+  public async getStatisticInfo(carAdId: string, carAd: ICarAd) {
     const month = dayjs().utc().subtract(1, "month");
     const week = dayjs().utc().subtract(1, "week");
     const day = dayjs().utc().subtract(24, "hours");

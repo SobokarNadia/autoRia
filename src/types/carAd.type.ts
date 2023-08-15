@@ -2,16 +2,23 @@ import { Types } from "mongoose";
 
 export interface ICarAd {
   _id?: Types.ObjectId;
-  transportType: string;
-  brand: string;
-  model: string;
-  releaseYear: number;
-  bodyType: string;
-  city: string;
-  price: number;
-  currency: string;
-  VIN: number;
-  _user: any;
+  transportType?: string;
+  brand?: string;
+  model?: string;
+  releaseYear?: number;
+  mileage?: number;
+  bodyType?: string;
+  city?: string;
+  price?: number;
+  currency?: string;
+  currencyUSD_UAH?: number;
+  priceUSD?: number;
+  priceUAH?: number;
+  currencyEUR_UAH?: number;
+  priceEUR?: number;
+  VIN?: number;
+  _user?: any;
+  _company?: any;
 }
 
 export interface ICurrency {

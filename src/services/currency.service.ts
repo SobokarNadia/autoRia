@@ -21,31 +21,34 @@ class CurrencyService {
     data: ICurrency[],
   ): Promise<IResponseCurrency> {
     try {
-      switch (type) {
-        case ECurrency.UAH:
-          return {
-            currencyEUR_UAH: parseFloat(data[0].sale),
-            priceEUR: Math.floor(price / +data[0].sale),
-            currencyUSD_UAH: parseFloat(data[1].sale),
-            priceUSD: Math.floor(price / +data[1].sale),
-            priceUAH: null,
-          };
-        case ECurrency.EUR:
-          return {
-            currencyEUR_UAH: parseFloat(data[0].sale),
-            priceUAH: Math.floor(price * +data[0].sale),
-            priceEUR: null,
-            currencyUSD_UAH: null,
-            priceUSD: null,
-          };
-        case ECurrency.USD:
-          return {
-            currencyUSD_UAH: parseFloat(data[1].sale),
-            priceUAH: Math.floor(price * +data[1].sale),
-            priceUSD: null,
-            priceEUR: null,
-            currencyEUR_UAH: null,
-          };
+      if (type === ECurrency.UAH) {
+        return {
+          currencyEUR_UAH: parseFloat(data[0].sale),
+          priceEUR: Math.floor(price / +data[0].sale),
+          currencyUSD_UAH: parseFloat(data[1].sale),
+          priceUSD: Math.floor(price / +data[1].sale),
+          priceUAH: null,
+        };
+      } else if (type === ECurrency.EUR) {
+        return {
+          currencyEUR_UAH: parseFloat(data[0].buy),
+          priceUAH: Math.floor(price * +data[0].buy),
+          priceEUR: null,
+          currencyUSD_UAH: parseFloat(data[1].sale),
+          priceUSD: Math.floor(
+            (price * parseFloat(data[0].buy)) / +data[1].sale,
+          ),
+        };
+      } else if (type === ECurrency.USD) {
+        return {
+          currencyUSD_UAH: parseFloat(data[1].buy),
+          priceUAH: Math.floor(price * +data[1].buy),
+          priceUSD: null,
+          priceEUR: Math.floor(
+            (price * parseFloat(data[1].buy)) / +data[0].sale,
+          ),
+          currencyEUR_UAH: parseFloat(data[0].sale),
+        };
       }
     } catch (e) {
       throw new ApiError(e.message, e.status);

@@ -58,9 +58,7 @@ class UserController {
     next: NextFunction,
   ): Promise<Response<void>> {
     try {
-      const { _id } = req.res.locals.payload;
-
-      await userService.setPremiumAccount(_id);
+      await userService.setPremiumAccount(req.params.userId);
 
       return res.sendStatus(200);
     } catch (e) {

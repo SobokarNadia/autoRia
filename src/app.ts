@@ -4,7 +4,7 @@ import * as mongoose from "mongoose";
 
 import { configs } from "./configs/config";
 import { cronRunner } from "./crons";
-import { authRouter, carAdRouter, userRouter } from "./routers";
+import { authRouter, carAdRouter, companyRouter, userRouter } from "./routers";
 
 const app = express();
 
@@ -24,6 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
 app.use("/carAd", carAdRouter);
+app.use("/company", companyRouter);
 
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   const status = error.status || 500;

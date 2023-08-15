@@ -10,9 +10,9 @@ class CarAdController {
     next: NextFunction,
   ): Promise<Response<void>> {
     try {
-      const { _id } = req.res.locals.payload;
+      const { _id, role } = req.res.locals.payload;
 
-      await carAdService.create(req.body, _id);
+      await carAdService.create(req.body, _id, role);
 
       return res.sendStatus(200);
     } catch (e) {
@@ -54,12 +54,10 @@ class CarAdController {
     next: NextFunction,
   ) {
     try {
-      const user = req.res.locals.user;
       const carAd = req.res.locals.carAd;
 
       const statistic = await statisticInfoService.getStatisticInfo(
         req.params.carAdId,
-        user,
         carAd,
       );
       return res.status(200).json(statistic);
@@ -88,8 +86,8 @@ class CarAdController {
     next: NextFunction,
   ): Promise<Response<void>> {
     try {
-      const { _id } = req.res.locals.payload;
-      await carAdService.delete(req.params.carAdId, _id);
+      const { _user: userId, _company: companyId } = req.res.locals.carAd;
+      await carAdService.delete(req.params.carAdId, userId, companyId);
 
       return res.sendStatus(200);
     } catch (e) {

@@ -76,7 +76,10 @@ const carAdSchema = new Schema(
     _user: {
       type: Types.ObjectId,
       ref: "user",
-      required: true,
+    },
+    _company: {
+      type: Types.ObjectId,
+      ref: "company",
     },
   },
   {

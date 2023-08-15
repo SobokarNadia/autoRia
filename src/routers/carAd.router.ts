@@ -1,11 +1,11 @@
 import { Router } from "express";
 
 import { carAdController } from "../controllers";
-import { EToken, EUserRole } from "../enums";
+import { EToken, EUserAccount, EUserRole } from "../enums";
 import {
   authMiddleware,
   commonMiddleware,
-  userMiddleware,
+  permissionsMiddleware,
 } from "../middlewares";
 import { CarAdValidator } from "../validators";
 
@@ -25,15 +25,19 @@ router.get(
   commonMiddleware.isIdValid("carAdId"),
   commonMiddleware.isCarAdExist,
   authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
-  userMiddleware.userPermissions([EUserRole.SELLER, EUserRole.ADMINISTRATOR]),
+  permissionsMiddleware.accountPermissions([EUserAccount.PREMIUM]),
   carAdController.getStatisticInfo,
 );
 
 router.post(
   "/create",
   authMiddleware.isBodyValid(CarAdValidator.create),
-  commonMiddleware.isVinUnique,
+  authMiddleware.isVinUnique,
   authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
+  permissionsMiddleware.accountPermissions([
+    EUserAccount.PREMIUM,
+    EUserAccount.BASIC,
+  ]),
   carAdController.create,
 );
 
@@ -43,7 +47,12 @@ router.patch(
   authMiddleware.isBodyValid(CarAdValidator.update),
   commonMiddleware.isCarAdExist,
   authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
-  userMiddleware.carAdPermissions([EUserRole.ADMINISTRATOR, EUserRole.SELLER]),
+  permissionsMiddleware.carAdPermissions([
+    EUserRole.ADMINISTRATOR,
+    EUserRole.SELLER,
+    EUserRole.COMPANY_ADMINISTRATOR,
+    EUserRole.COMPANY_MANAGER,
+  ]),
   carAdController.update,
 );
 
@@ -52,10 +61,12 @@ router.delete(
   commonMiddleware.isIdValid("carAdId"),
   commonMiddleware.isCarAdExist,
   authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
-  userMiddleware.carAdPermissions([
+  permissionsMiddleware.carAdPermissions([
     EUserRole.ADMINISTRATOR,
     EUserRole.SELLER,
     EUserRole.MANAGER,
+    EUserRole.COMPANY_ADMINISTRATOR,
+    EUserRole.COMPANY_MANAGER,
   ]),
   carAdController.delete,
 );

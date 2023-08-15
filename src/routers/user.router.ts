@@ -5,7 +5,7 @@ import { EToken, EUserRole } from "../enums";
 import {
   authMiddleware,
   commonMiddleware,
-  userMiddleware,
+  permissionsMiddleware,
 } from "../middlewares";
 import { UserValidator } from "../validators";
 
@@ -14,14 +14,16 @@ const router = Router();
 router.get(
   "/:userId",
   commonMiddleware.isIdValid("userId"),
-  userMiddleware.isUserExist,
+  commonMiddleware.isUserExist,
   userController.getUserWithCarAds,
 );
 
 router.post(
   "/setPremiumAccount/:userId",
+  commonMiddleware.isIdValid("userId"),
+  commonMiddleware.isUserExist,
   authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
-  userMiddleware.userPermissions([
+  permissionsMiddleware.userPermissions([
     EUserRole.ADMINISTRATOR,
     EUserRole.SELLER,
     EUserRole.MANAGER,
@@ -32,8 +34,9 @@ router.post(
 router.post(
   "/createManager",
   authMiddleware.isBodyValid(UserValidator.register),
+  authMiddleware.isEmailUnique,
   authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
-  userMiddleware.userPermissions([EUserRole.ADMINISTRATOR]),
+  permissionsMiddleware.userPermissions([EUserRole.ADMINISTRATOR]),
   userController.createManager,
 );
 
@@ -41,14 +44,17 @@ router.patch(
   "/update/:userId",
   authMiddleware.isBodyValid(UserValidator.update),
   authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
-  userMiddleware.userPermissions([EUserRole.ADMINISTRATOR, EUserRole.SELLER]),
+  permissionsMiddleware.userPermissions([
+    EUserRole.ADMINISTRATOR,
+    EUserRole.SELLER,
+  ]),
   userController.update,
 );
 
 router.delete(
   "/delete/:userId",
   authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
-  userMiddleware.userPermissions([
+  permissionsMiddleware.userPermissions([
     EUserRole.ADMINISTRATOR,
     EUserRole.SELLER,
     EUserRole.MANAGER,

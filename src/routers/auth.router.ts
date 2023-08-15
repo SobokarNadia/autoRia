@@ -2,7 +2,7 @@ import { Router } from "express";
 
 import { authController } from "../controllers";
 import { EToken } from "../enums";
-import { authMiddleware, userMiddleware } from "../middlewares";
+import { authMiddleware, commonMiddleware } from "../middlewares";
 import { UserValidator } from "../validators";
 
 const router = Router();
@@ -10,13 +10,22 @@ const router = Router();
 router.post(
   "/register",
   authMiddleware.isBodyValid(UserValidator.register),
+  authMiddleware.isEmailUnique,
   authController.register,
 );
+
 router.post(
   "/login",
   authMiddleware.isBodyValid(UserValidator.login),
-  userMiddleware.isUserExist,
+  commonMiddleware.isUserExist,
   authController.login,
+);
+
+router.post(
+  "/changePassword",
+  authMiddleware.isBodyValid(UserValidator.changePassword),
+  authMiddleware.checkAuthToken(EToken.ACCESSTOKEN),
+  authController.changePassword,
 );
 
 router.post(

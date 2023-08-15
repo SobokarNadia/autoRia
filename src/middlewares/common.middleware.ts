@@ -2,7 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import { isObjectIdOrHexString } from "mongoose";
 
 import { ApiError } from "../errors/api.error";
-import { CarAd } from "../models";
+import { CarAd, Company, User } from "../models";
+import { IUser } from "../types";
 
 class CommonMiddleware {
   public isIdValid(idField: string) {
@@ -40,22 +41,60 @@ class CommonMiddleware {
     }
   }
 
-  public async isVinUnique(req: Request, res: Response, next: NextFunction) {
+  public async isCompanyExist(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     try {
-      const { VIN } = req.body;
+      const company = await Company.findById(req.params.companyId);
 
-      if (await CarAd.findOne({ VIN })) {
-        throw new ApiError(
-          `CarAd with such ${VIN} vin code is already exist. VIN code should be unique.`,
-          400,
-        );
+      if (!company) {
+        throw new ApiError(`Company does not exist.`, 400);
       }
+      req.res.locals.company = company;
 
       next();
     } catch (e) {
       next(e);
     }
   }
+
+  public async isUserExist(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      let user: IUser;
+      if (req.body.email) {
+        user = await User.findOne({ email: req.body.email });
+      } else {
+        user = await User.findById(req.params.userId);
+      }
+
+      if (!user) {
+        throw new ApiError(`User does not exist.`, 400);
+      }
+
+      req.res.locals.user = user;
+
+      next();
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  // public async filterBody(req: Request, res: Response, next: NextFunction) {
+  //   const data = req.body;
+  //
+  //   for (const key in data) {
+  //     if (typeof data[key] === "string" && filter.check(data[key])) {
+  //       throw new ApiError("Profane is not allowed!", 400);
+  //     }
+  //   }
+  //   next();
+  // }
 }
 
 export const commonMiddleware = new CommonMiddleware();

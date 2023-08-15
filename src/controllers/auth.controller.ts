@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 import { authService } from "../services";
-import { ITokenPair } from "../types";
+import { ITokenPair, ITokenPayload } from "../types";
 
 class AuthController {
   public async register(
@@ -28,6 +28,21 @@ class AuthController {
       const tokenPair = await authService.login(req.body, _id);
 
       return res.status(200).json(tokenPair);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async changePassword(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response<ITokenPair>> {
+    try {
+      const { _id } = req.res.locals.payload as ITokenPayload;
+      await authService.changePassword(req.body, _id);
+
+      return res.sendStatus(200);
     } catch (e) {
       next(e);
     }

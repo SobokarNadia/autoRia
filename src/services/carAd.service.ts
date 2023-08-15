@@ -1,21 +1,19 @@
 import { Types } from "mongoose";
 
-import { ECurrency, EUserAccount } from "../enums";
+import { ECurrency, EUserRole } from "../enums";
 import { ApiError } from "../errors/api.error";
-import { CarAd, User, Views } from "../models";
+import { CarAd, Company, User, Views } from "../models";
 import { ICarAd, ICarAdUpdate, IPaginationResponse, IQuery } from "../types";
 import { currencyService } from "./currency.service";
 
 class CarAdService {
-  public async create(data: ICarAd, userId: string): Promise<void> {
+  public async create(
+    data: ICarAd,
+    userId: string,
+    role: string,
+  ): Promise<void> {
     try {
       const user = await User.findById(userId);
-      if (user.account === EUserAccount.BASIC && user._carAds.length !== 0) {
-        throw new ApiError(
-          "As you have basic account, you can add just one ad.",
-          400,
-        );
-      }
 
       const currencyData = await currencyService.getCurrency();
       const currency = await currencyService.updatePrices(
@@ -24,12 +22,34 @@ class CarAdService {
         currencyData,
       );
 
-      const carAd = await CarAd.create({
-        ...data,
-        _user: new Types.ObjectId(userId),
-        ...currency,
-      });
-      await user.updateOne({ $push: { _carAds: carAd._id } });
+      if (
+        role === EUserRole.MANAGER ||
+        role === EUserRole.SELLER ||
+        role === EUserRole.ADMINISTRATOR
+      ) {
+        const carAd = await CarAd.create({
+          ...data,
+          _user: new Types.ObjectId(userId),
+          ...currency,
+        });
+
+        await User.findByIdAndUpdate(userId, { $push: { _carAds: carAd._id } });
+      } else if (
+        role === EUserRole.COMPANY_MANAGER ||
+        role === EUserRole.COMPANY_ADMINISTRATOR
+      ) {
+        const carAd = await CarAd.create({
+          ...data,
+          _company: user._company,
+          ...currency,
+        });
+
+        await Company.findByIdAndUpdate(user._company, {
+          $push: { _carAds: carAd._id },
+        });
+      } else {
+        throw new ApiError("Problems with car creation.", 400);
+      }
     } catch (e) {
       throw new ApiError(e.message, e.status);
     }
@@ -90,13 +110,24 @@ class CarAdService {
     }
   }
 
-  public async delete(carAdId: string, userId: string): Promise<void> {
+  public async delete(
+    carAdId: string,
+    userId: string,
+    companyId: string,
+  ): Promise<void> {
     try {
+      if (userId) {
+        await User.findByIdAndUpdate(userId, {
+          $pull: { _carAds: carAdId },
+        });
+      } else if (companyId) {
+        await Company.findByIdAndUpdate(companyId, {
+          $pull: { _carAds: carAdId },
+        });
+      }
+
       await Promise.all([
         CarAd.findByIdAndDelete(carAdId),
-        User.findByIdAndUpdate(userId, {
-          $pull: { _carAds: carAdId },
-        }),
         Views.deleteMany({ _carAdId: carAdId }),
       ]);
     } catch (e) {
